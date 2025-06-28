@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VideoCard } from "../components/VideoCard";
 import { FilterBar } from "../components/FilterBar";
 import { StatsOverview } from "../components/StatsOverview";
@@ -12,7 +12,7 @@ const Index = () => {
   const [selectedHook, setSelectedHook] = useState("All");
 
   // Update filtered videos when allVideos changes
-  useState(() => {
+  useEffect(() => {
     setFilteredVideos(allVideos);
   }, [allVideos]);
 
