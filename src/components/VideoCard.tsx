@@ -60,21 +60,22 @@ export const VideoCard = ({ video }: VideoCardProps) => {
   };
 
   const handleVideoClick = () => {
-    if (video.videoLink) {
-      // Open the Instagram URL in a new tab
-      window.open(video.videoLink, '_blank', 'noopener,noreferrer');
-      toast({
-        title: "Opening Video",
-        description: "Redirecting to Instagram to view the original video...",
-      });
-    } else if (video.videoUrl) {
-      // Fallback to videoUrl if available
-      window.open(video.videoUrl, '_blank', 'noopener,noreferrer');
+    console.log('Video clicked, video data:', video);
+    console.log('Video Link:', video.videoLink);
+    console.log('Video URL:', video.videoUrl);
+    
+    // Try videoLink first (Instagram URL), then fall back to videoUrl
+    const linkToOpen = video.videoLink || video.videoUrl;
+    
+    if (linkToOpen) {
+      console.log('Opening link:', linkToOpen);
+      window.open(linkToOpen, '_blank', 'noopener,noreferrer');
       toast({
         title: "Opening Video",
         description: "Redirecting to view the original video...",
       });
     } else {
+      console.log('No video link available');
       toast({
         title: "Video Not Available",
         description: "The video link is not available for this content.",
@@ -104,14 +105,12 @@ export const VideoCard = ({ video }: VideoCardProps) => {
           </div>
 
           {/* External Link Icon */}
-          {video.videoLink && (
-            <div className="absolute bottom-3 right-3">
-              <Badge className="bg-black/70 text-white border-0 backdrop-blur-sm flex items-center gap-1">
-                <ExternalLink className="w-3 h-3" />
-                Watch
-              </Badge>
-            </div>
-          )}
+          <div className="absolute bottom-3 right-3">
+            <Badge className="bg-black/70 text-white border-0 backdrop-blur-sm flex items-center gap-1">
+              <ExternalLink className="w-3 h-3" />
+              Instagram
+            </Badge>
+          </div>
 
           {/* Viral Score Badge */}
           <div className="absolute top-3 right-3">
