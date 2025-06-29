@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { X, Play, Link, Download, Star, TrendingUp, Users, Eye, Copy, RefreshCw, Plus } from "lucide-react";
 import {
@@ -483,6 +484,7 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
                     <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                     <h4 className="text-gray-500 text-lg mb-2">No brands yet</h4>
                     <p className="text-gray-400 mb-4">Create your first brand to get started with personalized script generation</p>
+                    <p className="text-sm text-amber-600 mb-4">Note: You need to be logged in to create and manage brands</p>
                     <Button onClick={openCreateBrandModal} className="bg-gradient-to-r from-purple-600 to-blue-600">
                       <Plus className="w-4 h-4 mr-2" />
                       Create Your First Brand

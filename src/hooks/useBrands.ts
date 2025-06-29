@@ -22,6 +22,14 @@ export const useBrands = () => {
 
   const fetchBrands = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No authenticated user found');
+        setBrands([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('brands')
         .select('*')
@@ -33,7 +41,7 @@ export const useBrands = () => {
       console.error('Error fetching brands:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch brands",
+        description: "Failed to fetch brands. Please make sure you're logged in.",
         variant: "destructive"
       });
     } finally {
@@ -44,7 +52,14 @@ export const useBrands = () => {
   const createBrand = async (brandData: Omit<Brand, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No authenticated user');
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to create brands",
+          variant: "destructive"
+        });
+        throw new Error('No authenticated user');
+      }
 
       const { data, error } = await supabase
         .from('brands')
@@ -65,17 +80,29 @@ export const useBrands = () => {
       return data;
     } catch (error) {
       console.error('Error creating brand:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create brand",
-        variant: "destructive"
-      });
+      if (error instanceof Error && error.message !== 'No authenticated user') {
+        toast({
+          title: "Error",
+          description: "Failed to create brand",
+          variant: "destructive"
+        });
+      }
       throw error;
     }
   };
 
   const updateBrand = async (id: string, updates: Partial<Brand>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to update brands",
+          variant: "destructive"
+        });
+        throw new Error('No authenticated user');
+      }
+
       const { data, error } = await supabase
         .from('brands')
         .update({ ...updates, updated_at: new Date().toISOString() })
@@ -93,17 +120,29 @@ export const useBrands = () => {
       return data;
     } catch (error) {
       console.error('Error updating brand:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update brand",
-        variant: "destructive"
-      });
+      if (error instanceof Error && error.message !== 'No authenticated user') {
+        toast({
+          title: "Error",
+          description: "Failed to update brand",
+          variant: "destructive"
+        });
+      }
       throw error;
     }
   };
 
   const deleteBrand = async (id: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to delete brands",
+          variant: "destructive"
+        });
+        throw new Error('No authenticated user');
+      }
+
       const { error } = await supabase
         .from('brands')
         .delete()
@@ -118,11 +157,13 @@ export const useBrands = () => {
       });
     } catch (error) {
       console.error('Error deleting brand:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete brand",
-        variant: "destructive"
-      });
+      if (error instanceof Error && error.message !== 'No authenticated user') {
+        toast({
+          title: "Error",
+          description: "Failed to delete brand",
+          variant: "destructive"
+        });
+      }
       throw error;
     }
   };
