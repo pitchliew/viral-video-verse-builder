@@ -20,9 +20,11 @@ serve(async (req) => {
       throw new Error('Claude API key is not configured');
     }
 
+    // Enhanced debugging
     console.log('Claude API key status:', claudeApiKey ? 'Present' : 'Missing');
     console.log('API key length:', claudeApiKey?.length || 0);
-    console.log('API key starts with:', claudeApiKey?.substring(0, 10) + '...');
+    console.log('API key format check:', claudeApiKey?.startsWith('sk-ant-') ? 'Correct format' : 'Incorrect format');
+    console.log('API key preview:', claudeApiKey?.substring(0, 15) + '...' + claudeApiKey?.substring(claudeApiKey.length - 4));
 
     const { video, customRequirements } = await req.json();
     
@@ -78,44 +80,52 @@ Format your response EXACTLY like this:
 Make it ${customRequirements.duration} appropriate and use a ${customRequirements.voiceTone} tone throughout.`;
 
     console.log('Making request to Claude API...');
+    console.log('Request headers will include Authorization with key length:', claudeApiKey.length);
+
+    const requestBody = {
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 2000,
+      messages: [
+        { 
+          role: 'user', 
+          content: `${systemPrompt}\n\n${userPrompt}` 
+        }
+      ]
+    };
+
+    console.log('Request body prepared, making API call...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${claudeApiKey}`,
+        'x-api-key': claudeApiKey, // Changed from Authorization to x-api-key
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 2000,
-        messages: [
-          { 
-            role: 'user', 
-            content: `${systemPrompt}\n\n${userPrompt}` 
-          }
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     console.log('Claude API response status:', response.status);
+    console.log('Claude API response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Claude API error response:', errorText);
+      console.error('Response status:', response.status, response.statusText);
       throw new Error(`Claude API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
     console.log('Claude API response received successfully');
+    console.log('Response structure:', Object.keys(data));
     
     if (!data.content || !data.content[0] || !data.content[0].text) {
+      console.error('Invalid response structure:', data);
       throw new Error('Invalid response format from Claude API');
     }
 
     const generatedScript = data.content[0].text;
-
-    console.log('Script generated successfully');
+    console.log('Script generated successfully, length:', generatedScript.length);
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -127,9 +137,16 @@ Make it ${customRequirements.duration} appropriate and use a ${customRequirement
 
   } catch (error) {
     console.error('Error generating script:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    
     return new Response(JSON.stringify({ 
       success: false,
-      error: error.message 
+      error: error.message,
+      details: 'Check function logs for more information'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
