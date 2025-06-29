@@ -15,10 +15,16 @@ serve(async (req) => {
   }
 
   try {
+    if (!claudeApiKey) {
+      console.error('CLAUDE_API_KEY is not set');
+      throw new Error('Claude API key is not configured');
+    }
+
     const { video, customRequirements } = await req.json();
     
     console.log('Generating script for video:', video.title);
     console.log('Custom requirements:', customRequirements);
+    console.log('Using Claude API key:', claudeApiKey ? 'Present' : 'Missing');
 
     const systemPrompt = `You are an expert viral content creator and script writer. Your task is to create engaging, platform-optimized scripts that have the potential to go viral based on successful viral video patterns.
 
@@ -67,12 +73,15 @@ Format your response EXACTLY like this:
 
 Make it ${customRequirements.duration} appropriate and use a ${customRequirements.voiceTone} tone throughout.`;
 
+    console.log('Making request to Claude API...');
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${claudeApiKey}`,
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'messages-2023-12-15',
       },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
@@ -83,11 +92,22 @@ Make it ${customRequirements.duration} appropriate and use a ${customRequirement
       }),
     });
 
+    console.log('Claude API response status:', response.status);
+    console.log('Claude API response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Claude API error response:', errorText);
+      throw new Error(`Claude API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Claude API response data:', data);
+    
+    if (!data.content || !data.content[0] || !data.content[0].text) {
+      throw new Error('Invalid response format from Claude API');
+    }
+
     const generatedScript = data.content[0].text;
 
     console.log('Script generated successfully');
