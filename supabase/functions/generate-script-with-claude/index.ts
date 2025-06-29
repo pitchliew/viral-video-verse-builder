@@ -24,7 +24,6 @@ serve(async (req) => {
     
     console.log('Generating script for video:', video.title);
     console.log('Custom requirements:', customRequirements);
-    console.log('Using Claude API key:', claudeApiKey ? 'Present' : 'Missing');
 
     const systemPrompt = `You are an expert viral content creator and script writer. Your task is to create engaging, platform-optimized scripts that have the potential to go viral based on successful viral video patterns.
 
@@ -82,19 +81,20 @@ Make it ${customRequirements.duration} appropriate and use a ${customRequirement
         'Authorization': `Bearer ${claudeApiKey}`,
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'messages-2023-12-15',
       },
       body: JSON.stringify({
         model: 'claude-3-5-sonnet-20241022',
         max_tokens: 2000,
         messages: [
-          { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
+          { 
+            role: 'user', 
+            content: `${systemPrompt}\n\n${userPrompt}` 
+          }
         ],
       }),
     });
 
     console.log('Claude API response status:', response.status);
-    console.log('Claude API response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -103,7 +103,7 @@ Make it ${customRequirements.duration} appropriate and use a ${customRequirement
     }
 
     const data = await response.json();
-    console.log('Claude API response data:', data);
+    console.log('Claude API response received successfully');
     
     if (!data.content || !data.content[0] || !data.content[0].text) {
       throw new Error('Invalid response format from Claude API');
