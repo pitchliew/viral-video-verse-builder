@@ -81,8 +81,8 @@ serve(async (req) => {
         return 0;
       };
 
-      // Helper function to extract URL from button object
-      const extractVideoLink = (value: any): string => {
+      // Helper function to extract Instagram video link
+      const extractInstagramLink = (value: any): string => {
         if (typeof value === 'string') return value;
         if (value && typeof value === 'object' && value.url) return value.url;
         return '';
@@ -91,7 +91,7 @@ serve(async (req) => {
       return {
         id: record.id,
         videoUrl: safeString(fields['Video Url'] || fields['Video URL'] || fields['_Video Url']) || '',
-        videoLink: extractVideoLink(fields['Video Link']) || extractVideoLink(fields['fldOXCgmj3INPSctx']) || '',
+        videoLink: extractInstagramLink(fields['Instagram video link'] || fields['fldZPnK6Xil9ilttr']) || '',
         thumbnailUrl: fields['thumbnail'] && fields['thumbnail'][0] ? fields['thumbnail'][0].url : 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=600&fit=crop',
         author: safeString(fields['username'] || fields['Author']) || 'Unknown Author',
         caption: safeString(fields['Caption*'] || fields['captions'] || fields['Caption']) || '',
