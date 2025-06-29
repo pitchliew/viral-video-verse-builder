@@ -20,6 +20,10 @@ serve(async (req) => {
       throw new Error('Claude API key is not configured');
     }
 
+    console.log('Claude API key status:', claudeApiKey ? 'Present' : 'Missing');
+    console.log('API key length:', claudeApiKey?.length || 0);
+    console.log('API key starts with:', claudeApiKey?.substring(0, 10) + '...');
+
     const { video, customRequirements } = await req.json();
     
     console.log('Generating script for video:', video.title);
