@@ -4,16 +4,25 @@ import { VideoCard } from "../components/VideoCard";
 import { FilterBar } from "../components/FilterBar";
 import { StatsOverview } from "../components/StatsOverview";
 import { VideoPagination } from "../components/VideoPagination";
+import { SavedScriptCard } from "../components/SavedScriptCard";
+import { ScriptEditor } from "../components/ScriptEditor";
 import { useAirtableVideos } from "../hooks/useAirtableVideos";
+import { useSavedScripts } from "../hooks/useSavedScripts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Video } from "lucide-react";
 
 const VIDEOS_PER_PAGE = 12;
 
 const Index = () => {
   const { videos: allVideos, loading, error } = useAirtableVideos();
+  const { scripts, loading: scriptsLoading, deleteScript } = useSavedScripts();
   const [filteredVideos, setFilteredVideos] = useState(allVideos);
   const [selectedIndustry, setSelectedIndustry] = useState("All");
   const [selectedHook, setSelectedHook] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("templates");
+  const [selectedScript, setSelectedScript] = useState<any>(null);
+  const [showScriptEditor, setShowScriptEditor] = useState(false);
 
   // Update filtered videos when allVideos changes
   useEffect(() => {
@@ -53,6 +62,16 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleEditScript = (script: any) => {
+    setSelectedScript(script);
+    setShowScriptEditor(true);
+  };
+
+  const handleViewScript = (script: any) => {
+    setSelectedScript(script);
+    setShowScriptEditor(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
@@ -75,6 +94,22 @@ const Index = () => {
     );
   }
 
+  // If script editor is open, show it
+  if (showScriptEditor && selectedScript) {
+    return (
+      <ScriptEditor 
+        generatedScript={selectedScript.content}
+        originalVideo={selectedScript.original_video_data}
+        existingScript={selectedScript}
+        isEditMode={true}
+        onClose={() => {
+          setShowScriptEditor(false);
+          setSelectedScript(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       {/* Enhanced Header */}
@@ -88,48 +123,96 @@ const Index = () => {
               Decode the secrets behind viral content
             </p>
             <p className="text-purple-600 font-semibold">
-              {filteredVideos.length} viral templates analyzed
+              {activeTab === "templates" 
+                ? `${filteredVideos.length} viral templates analyzed`
+                : `${scripts.length} saved scripts`
+              }
             </p>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
-        <StatsOverview videos={currentVideos} />
+        {/* Navigation Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-8">
+          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+            <TabsTrigger value="templates" className="flex items-center gap-2">
+              <Video className="w-4 h-4" />
+              Viral Templates
+            </TabsTrigger>
+            <TabsTrigger value="scripts" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              My Scripts
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Filter Bar */}
-        <FilterBar 
-          onFilter={handleFilter}
-          selectedIndustry={selectedIndustry}
-          selectedHook={selectedHook}
-          allVideos={allVideos}
-        />
+          <TabsContent value="templates" className="space-y-8">
+            {/* Stats Overview */}
+            <StatsOverview videos={currentVideos} />
 
-        {/* Enhanced Videos Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {currentVideos.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))}
-        </div>
+            {/* Filter Bar */}
+            <FilterBar 
+              onFilter={handleFilter}
+              selectedIndustry={selectedIndustry}
+              selectedHook={selectedHook}
+              allVideos={allVideos}
+            />
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <VideoPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
-
-        {filteredVideos.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg max-w-md mx-auto">
-              <div className="text-gray-400 text-xl mb-2">No videos found</div>
-              <p className="text-gray-500">Try adjusting your filters to see more results</p>
+            {/* Enhanced Videos Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              {currentVideos.map((video) => (
+                <VideoCard key={video.id} video={video} />
+              ))}
             </div>
-          </div>
-        )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <VideoPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+
+            {filteredVideos.length === 0 && !loading && (
+              <div className="text-center py-12">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg max-w-md mx-auto">
+                  <div className="text-gray-400 text-xl mb-2">No videos found</div>
+                  <p className="text-gray-500">Try adjusting your filters to see more results</p>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="scripts" className="space-y-8">
+            {scriptsLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading saved scripts...</p>
+              </div>
+            ) : scripts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg max-w-md mx-auto">
+                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <div className="text-gray-400 text-xl mb-2">No saved scripts yet</div>
+                  <p className="text-gray-500">Generate and save your first script from a viral template</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {scripts.map((script) => (
+                  <SavedScriptCard
+                    key={script.id}
+                    script={script}
+                    onEdit={handleEditScript}
+                    onView={handleViewScript}
+                    onDelete={deleteScript}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

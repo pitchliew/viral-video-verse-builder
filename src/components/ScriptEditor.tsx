@@ -1,12 +1,14 @@
-
 import { useState } from "react";
-import { Copy, Download, Share2, Calendar, CheckCircle, FileText, Bookmark, StickyNote } from "lucide-react";
+import { Copy, Download, Share2, Calendar, CheckCircle, FileText, Bookmark, StickyNote, Save, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { SaveScriptModal } from "./SaveScriptModal";
+import { useSavedScripts } from "@/hooks/useSavedScripts";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ScriptEditorProps {
   generatedScript: string;
@@ -18,12 +20,19 @@ interface ScriptEditorProps {
     viralScore: number;
   };
   onClose?: () => void;
+  existingScript?: any;
+  isEditMode?: boolean;
 }
 
-export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: ScriptEditorProps) => {
+export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existingScript, isEditMode = false }: ScriptEditorProps) => {
   const [notes, setNotes] = useState("");
   const [shortcuts, setShortcuts] = useState("");
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(isEditMode);
+  const [editedSections, setEditedSections] = useState<any>({});
   const { toast } = useToast();
+  const { saveScript, updateScript } = useSavedScripts();
+  const [isSaving, setIsSaving] = useState(false);
 
   // Parse the generated script into sections
   const parseScript = (script: string) => {
@@ -60,7 +69,8 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
     return sections;
   };
 
-  const scriptSections = parseScript(generatedScript);
+  const scriptSections = existingScript?.script_sections || parseScript(generatedScript);
+  const currentSections = isEditing ? { ...scriptSections, ...editedSections } : scriptSections;
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -78,6 +88,49 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
     }
   };
 
+  const handleSaveScript = async (data: { title: string; description?: string }) => {
+    setIsSaving(true);
+    try {
+      const scriptData = {
+        title: data.title,
+        content: generatedScript,
+        script_sections: currentSections,
+        original_video_data: originalVideo,
+      };
+
+      if (existingScript) {
+        await updateScript(existingScript.id, scriptData);
+      } else {
+        await saveScript(scriptData);
+      }
+      
+      setShowSaveModal(false);
+    } catch (error) {
+      // Error handling is in the hook
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSectionEdit = (section: string, value: string) => {
+    setEditedSections(prev => ({
+      ...prev,
+      [section]: value
+    }));
+  };
+
+  const toggleEditMode = () => {
+    if (isEditing && existingScript) {
+      // Auto-save when leaving edit mode
+      const updatedSections = { ...scriptSections, ...editedSections };
+      updateScript(existingScript.id, {
+        script_sections: updatedSections,
+        content: generatedScript // You might want to reconstruct this from sections
+      });
+    }
+    setIsEditing(!isEditing);
+  };
+
   const performanceScores = {
     hookStrength: 87,
     viralPotential: 92,
@@ -92,7 +145,7 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Script Editor</h1>
           <p className="text-gray-600 mt-1">
-            Generated from: {originalVideo?.title || 'Viral Template'}
+            {existingScript ? `Editing: ${existingScript.title}` : `Generated from: ${originalVideo?.title || 'Viral Template'}`}
           </p>
         </div>
         <div className="flex gap-3">
@@ -121,6 +174,20 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
             </CardHeader>
             <CardContent>
               <div className="flex gap-3">
+                <Button 
+                  className="bg-purple-600 hover:bg-purple-700"
+                  onClick={() => setShowSaveModal(true)}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {existingScript ? 'Update Script' : 'Save Script'}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={toggleEditMode}
+                >
+                  <Edit3 className="w-4 h-4 mr-2" />
+                  {isEditing ? 'View Mode' : 'Edit Mode'}
+                </Button>
                 <Button className="bg-green-600 hover:bg-green-700">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Mark as Approved
@@ -128,10 +195,6 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                 <Button variant="outline">
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Post
-                </Button>
-                <Button variant="outline">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share Script
                 </Button>
               </div>
             </CardContent>
@@ -154,7 +217,7 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => copyToClipboard(scriptSections.hook, 'Hook')}
+                      onClick={() => copyToClipboard(currentSections.hook, 'Hook')}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -162,7 +225,15 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                 </CardHeader>
                 <CardContent>
                   <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                    <p className="text-gray-800 font-medium">{scriptSections.hook}</p>
+                    {isEditing ? (
+                      <Textarea
+                        value={editedSections.hook || currentSections.hook}
+                        onChange={(e) => handleSectionEdit('hook', e.target.value)}
+                        className="w-full min-h-[100px] font-medium"
+                      />
+                    ) : (
+                      <p className="text-gray-800 font-medium">{currentSections.hook}</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -174,7 +245,7 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => copyToClipboard(scriptSections.mainContent, 'Main Content')}
+                      onClick={() => copyToClipboard(currentSections.mainContent, 'Main Content')}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -182,7 +253,15 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                 </CardHeader>
                 <CardContent>
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-gray-800 whitespace-pre-line">{scriptSections.mainContent}</p>
+                    {isEditing ? (
+                      <Textarea
+                        value={editedSections.mainContent || currentSections.mainContent}
+                        onChange={(e) => handleSectionEdit('mainContent', e.target.value)}
+                        className="w-full min-h-[200px]"
+                      />
+                    ) : (
+                      <p className="text-gray-800 whitespace-pre-line">{currentSections.mainContent}</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -194,7 +273,7 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => copyToClipboard(scriptSections.callToAction, 'Call to Action')}
+                      onClick={() => copyToClipboard(currentSections.callToAction, 'Call to Action')}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -202,7 +281,15 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                 </CardHeader>
                 <CardContent>
                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <p className="text-gray-800 font-medium">{scriptSections.callToAction}</p>
+                    {isEditing ? (
+                      <Textarea
+                        value={editedSections.callToAction || currentSections.callToAction}
+                        onChange={(e) => handleSectionEdit('callToAction', e.target.value)}
+                        className="w-full min-h-[100px] font-medium"
+                      />
+                    ) : (
+                      <p className="text-gray-800 font-medium">{currentSections.callToAction}</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -214,7 +301,7 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => copyToClipboard(scriptSections.fullCaption, 'Full Caption')}
+                      onClick={() => copyToClipboard(currentSections.fullCaption, 'Full Caption')}
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
@@ -222,13 +309,21 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
                 </CardHeader>
                 <CardContent>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <p className="text-gray-800 whitespace-pre-line">{scriptSections.fullCaption}</p>
+                    {isEditing ? (
+                      <Textarea
+                        value={editedSections.fullCaption || currentSections.fullCaption}
+                        onChange={(e) => handleSectionEdit('fullCaption', e.target.value)}
+                        className="w-full min-h-[150px]"
+                      />
+                    ) : (
+                      <p className="text-gray-800 whitespace-pre-line">{currentSections.fullCaption}</p>
+                    )}
                   </div>
-                  {scriptSections.hashtags && (
+                  {currentSections.hashtags && (
                     <div className="mt-4">
                       <h4 className="font-semibold mb-2">Suggested Hashtags:</h4>
                       <div className="flex flex-wrap gap-2">
-                        {scriptSections.hashtags.split(/[\s,#]+/).filter(tag => tag.trim()).map((tag, index) => (
+                        {currentSections.hashtags.split(/[\s,#]+/).filter(tag => tag.trim()).map((tag, index) => (
                           <Badge key={index} variant="secondary">#{tag}</Badge>
                         ))}
                       </div>
@@ -238,6 +333,7 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
               </Card>
             </TabsContent>
 
+            
             <TabsContent value="shortcuts">
               <Card>
                 <CardHeader>
@@ -394,6 +490,13 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: Script
           )}
         </div>
       </div>
+
+      <SaveScriptModal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        onSave={handleSaveScript}
+        isLoading={isSaving}
+      />
     </div>
   );
 };
