@@ -21,7 +21,7 @@ serve(async (req) => {
     }
 
     const baseId = 'appgdsZTvVy6L3nhj';
-    const tableName = 'tblQHcjJdKp5pY2wO'; // Your table ID
+    const tableName = 'tbll1vtFU4cf40F20'; // Updated table ID
     
     const response = await fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
       headers: {
