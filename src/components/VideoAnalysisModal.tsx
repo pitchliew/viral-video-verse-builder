@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { X, Play, Link, Download, Star, TrendingUp, Users, Eye } from "lucide-react";
+import { X, Play, Link, Download, Star, TrendingUp, Users, Eye, Copy, RefreshCw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Video {
   id: string;
@@ -37,6 +41,13 @@ interface VideoAnalysisModalProps {
   onClose: () => void;
 }
 
+interface CustomRequirements {
+  targetAudience: string;
+  brand: string;
+  duration: string;
+  voiceTone: string;
+}
+
 const formatNumber = (num: number): string => {
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
@@ -56,10 +67,95 @@ const safeRender = (value: any): string => {
 
 export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModalProps) => {
   const [activeTab, setActiveTab] = useState("insights");
+  const [customRequirements, setCustomRequirements] = useState<CustomRequirements>({
+    targetAudience: '',
+    brand: '',
+    duration: '15-30 seconds',
+    voiceTone: 'Casual'
+  });
+  const [generatedScript, setGeneratedScript] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   if (!video) return null;
 
   const engagementRate = ((video.likes + video.comments + video.shares) / video.views * 100).toFixed(1);
+
+  const handleInputChange = (field: keyof CustomRequirements, value: string) => {
+    setCustomRequirements(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleGenerateScript = async () => {
+    if (!customRequirements.targetAudience.trim() || !customRequirements.brand.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in both Target Audience and Brand/Product fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-script-with-claude', {
+        body: {
+          video,
+          customRequirements
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setGeneratedScript(data.generatedScript);
+        toast({
+          title: "Script Generated Successfully!",
+          description: "Your custom script is ready. Check the results below.",
+        });
+      } else {
+        throw new Error(data.error || 'Failed to generate script');
+      }
+    } catch (error) {
+      console.error('Script generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: "There was an error generating your script. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied to Clipboard",
+        description: "Script has been copied to your clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy to clipboard. Please select and copy manually.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setCustomRequirements({
+      targetAudience: '',
+      brand: '',
+      duration: '15-30 seconds',
+      voiceTone: 'Casual'
+    });
+    setGeneratedScript('');
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -213,28 +309,42 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
           <TabsContent value="generate" className="space-y-4">
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold mb-4">Generate Custom Script</h4>
-                <div className="space-y-4">
+                <h4 className="font-semibold mb-4 flex items-center gap-2">
+                  <Star className="w-5 h-5 text-purple-500" />
+                  Generate Custom Script with AI
+                </h4>
+                
+                <div className="space-y-4 mb-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Target Audience</label>
-                    <input 
+                    <label className="block text-sm font-medium mb-2">Target Audience *</label>
+                    <Input 
                       type="text" 
-                      placeholder="e.g., Young professionals, fitness enthusiasts"
-                      className="w-full p-2 border rounded-lg"
+                      placeholder="e.g., Young professionals, fitness enthusiasts, small business owners"
+                      value={customRequirements.targetAudience}
+                      onChange={(e) => handleInputChange('targetAudience', e.target.value)}
+                      className="w-full"
                     />
                   </div>
+                  
                   <div>
-                    <label className="block text-sm font-medium mb-2">Brand/Product</label>
-                    <input 
+                    <label className="block text-sm font-medium mb-2">Brand/Product *</label>
+                    <Input 
                       type="text" 
-                      placeholder="Your brand or product name"
-                      className="w-full p-2 border rounded-lg"
+                      placeholder="Your brand, product, or service name"
+                      value={customRequirements.brand}
+                      onChange={(e) => handleInputChange('brand', e.target.value)}
+                      className="w-full"
                     />
                   </div>
+                  
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Duration</label>
-                      <select className="w-full p-2 border rounded-lg">
+                      <select 
+                        className="w-full p-2 border rounded-lg"
+                        value={customRequirements.duration}
+                        onChange={(e) => handleInputChange('duration', e.target.value)}
+                      >
                         <option>15-30 seconds</option>
                         <option>30-60 seconds</option>
                         <option>60-90 seconds</option>
@@ -242,18 +352,72 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Voice Tone</label>
-                      <select className="w-full p-2 border rounded-lg">
+                      <select 
+                        className="w-full p-2 border rounded-lg"
+                        value={customRequirements.voiceTone}
+                        onChange={(e) => handleInputChange('voiceTone', e.target.value)}
+                      >
                         <option>Casual</option>
                         <option>Professional</option>
                         <option>Energetic</option>
                         <option>Inspirational</option>
+                        <option>Authoritative</option>
+                        <option>Friendly</option>
                       </select>
                     </div>
                   </div>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-                    Generate Custom Script
+                </div>
+
+                <div className="flex gap-3 mb-6">
+                  <Button 
+                    onClick={handleGenerateScript}
+                    disabled={isGenerating}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-4 h-4 mr-2" />
+                        Generate Custom Script
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={resetForm}
+                    disabled={isGenerating}
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Reset
                   </Button>
                 </div>
+
+                {generatedScript && (
+                  <div className="border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h5 className="font-semibold text-lg">Generated Script</h5>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => copyToClipboard(generatedScript)}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy All
+                      </Button>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-lg border max-h-96 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
+                        {generatedScript}
+                      </pre>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
