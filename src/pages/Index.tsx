@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { VideoCard } from "../components/VideoCard";
 import { FilterBar } from "../components/FilterBar";
@@ -6,8 +5,10 @@ import { StatsOverview } from "../components/StatsOverview";
 import { VideoPagination } from "../components/VideoPagination";
 import { SavedScriptCard } from "../components/SavedScriptCard";
 import { ScriptEditor } from "../components/ScriptEditor";
+import { AuthButton } from "../components/AuthButton";
 import { useAirtableVideos } from "../hooks/useAirtableVideos";
 import { useSavedScripts } from "../hooks/useSavedScripts";
+import { useAuth } from "../hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Video } from "lucide-react";
 
@@ -16,6 +17,7 @@ const VIDEOS_PER_PAGE = 12;
 const Index = () => {
   const { videos: allVideos, loading, error } = useAirtableVideos();
   const { scripts, loading: scriptsLoading, deleteScript } = useSavedScripts();
+  const { user, loading: authLoading } = useAuth();
   const [filteredVideos, setFilteredVideos] = useState(allVideos);
   const [selectedIndustry, setSelectedIndustry] = useState("All");
   const [selectedHook, setSelectedHook] = useState("All");
@@ -72,7 +74,7 @@ const Index = () => {
     setShowScriptEditor(true);
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -115,19 +117,24 @@ const Index = () => {
       {/* Enhanced Header */}
       <div className="bg-white/90 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-              Viral Video Vault
-            </h1>
-            <p className="text-gray-600 text-xl mb-2">
-              Decode the secrets behind viral content
-            </p>
-            <p className="text-purple-600 font-semibold">
-              {activeTab === "templates" 
-                ? `${filteredVideos.length} viral templates analyzed`
-                : `${scripts.length} saved scripts`
-              }
-            </p>
+          <div className="flex justify-between items-center mb-6">
+            <div className="text-center flex-1">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+                Viral Video Vault
+              </h1>
+              <p className="text-gray-600 text-xl mb-2">
+                Decode the secrets behind viral content
+              </p>
+              <p className="text-purple-600 font-semibold">
+                {activeTab === "templates" 
+                  ? `${filteredVideos.length} viral templates analyzed`
+                  : `${scripts.length} saved scripts`
+                }
+              </p>
+            </div>
+            <div className="absolute top-4 right-4">
+              <AuthButton />
+            </div>
           </div>
         </div>
       </div>
@@ -142,7 +149,7 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="scripts" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              My Scripts
+              My Scripts {!user && "(Sign in required)"}
             </TabsTrigger>
           </TabsList>
 
@@ -185,7 +192,16 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="scripts" className="space-y-8">
-            {scriptsLoading ? (
+            {!user ? (
+              <div className="text-center py-12">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg max-w-md mx-auto">
+                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <div className="text-gray-400 text-xl mb-2">Sign in required</div>
+                  <p className="text-gray-500 mb-4">Please sign in to view and manage your saved scripts</p>
+                  <AuthButton />
+                </div>
+              </div>
+            ) : scriptsLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Loading saved scripts...</p>
