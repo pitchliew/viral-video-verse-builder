@@ -77,15 +77,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Enhanced Header */}
+      <div className="bg-white/90 backdrop-blur-sm border-b border-purple-100 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              Viral Video Analytics
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+              Viral Video Vault
             </h1>
-            <p className="text-gray-600 text-lg">
-              Discover what makes content go viral - {filteredVideos.length} videos found
+            <p className="text-gray-600 text-xl mb-2">
+              Decode the secrets behind viral content
+            </p>
+            <p className="text-purple-600 font-semibold">
+              {filteredVideos.length} viral templates analyzed
             </p>
           </div>
         </div>
@@ -103,8 +106,8 @@ const Index = () => {
           allVideos={allVideos}
         />
 
-        {/* Videos Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Videos Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {currentVideos.map((video) => (
             <VideoCard key={video.id} video={video} />
           ))}
@@ -121,8 +124,10 @@ const Index = () => {
 
         {filteredVideos.length === 0 && !loading && (
           <div className="text-center py-12">
-            <div className="text-gray-400 text-xl mb-2">No videos found</div>
-            <p className="text-gray-500">Try adjusting your filters</p>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg max-w-md mx-auto">
+              <div className="text-gray-400 text-xl mb-2">No videos found</div>
+              <p className="text-gray-500">Try adjusting your filters to see more results</p>
+            </div>
           </div>
         )}
       </div>
