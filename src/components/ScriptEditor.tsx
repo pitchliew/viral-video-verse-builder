@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Download, Share2, Calendar, CheckCircle, FileText, Bookmark, StickyNote, Save, Edit3 } from "lucide-react";
+import { Copy, Download, Share2, CheckCircle, FileText, Bookmark, StickyNote, Save, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -192,21 +192,16 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Mark as Approved
                 </Button>
-                <Button variant="outline">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Post
-                </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Script Sections */}
           <Tabs defaultValue="script" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="script">Script</TabsTrigger>
               <TabsTrigger value="shortcuts">Shortcuts</TabsTrigger>
               <TabsTrigger value="notes">Notes</TabsTrigger>
-              <TabsTrigger value="schedule">Schedule</TabsTrigger>
             </TabsList>
 
             <TabsContent value="script" className="space-y-4">
@@ -333,7 +328,6 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
               </Card>
             </TabsContent>
 
-            
             <TabsContent value="shortcuts">
               <Card>
                 <CardHeader>
@@ -368,35 +362,6 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="schedule">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Schedule Publishing
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Publishing Date</label>
-                      <input type="datetime-local" className="w-full p-2 border rounded-lg" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Platform</label>
-                      <select className="w-full p-2 border rounded-lg">
-                        <option>Instagram</option>
-                        <option>TikTok</option>
-                        <option>YouTube Shorts</option>
-                        <option>LinkedIn</option>
-                      </select>
-                    </div>
-                    <Button className="w-full">Schedule Post</Button>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -449,20 +414,11 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
             <CardContent className="space-y-2">
               <Button variant="outline" className="w-full justify-start">
                 <FileText className="w-4 h-4 mr-2" />
-                Export as PDF
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <FileText className="w-4 h-4 mr-2" />
-                Save to Notion
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <FileText className="w-4 h-4 mr-2" />
                 Export as Markdown
               </Button>
             </CardContent>
           </Card>
 
-          {/* Original Video Info */}
           {originalVideo && (
             <Card>
               <CardHeader>
