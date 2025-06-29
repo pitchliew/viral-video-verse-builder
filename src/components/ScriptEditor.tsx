@@ -1,0 +1,399 @@
+
+import { useState } from "react";
+import { Copy, Download, Share2, Calendar, CheckCircle, FileText, Bookmark, StickyNote } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+
+interface ScriptEditorProps {
+  generatedScript: string;
+  originalVideo?: {
+    title: string;
+    author: string;
+    hookType: string;
+    industry: string;
+    viralScore: number;
+  };
+  onClose?: () => void;
+}
+
+export const ScriptEditor = ({ generatedScript, originalVideo, onClose }: ScriptEditorProps) => {
+  const [notes, setNotes] = useState("");
+  const [shortcuts, setShortcuts] = useState("");
+  const { toast } = useToast();
+
+  // Parse the generated script into sections
+  const parseScript = (script: string) => {
+    const sections = {
+      hook: "",
+      mainContent: "",
+      callToAction: "",
+      hashtags: "",
+      fullCaption: ""
+    };
+
+    const lines = script.split('\n');
+    let currentSection = '';
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine.includes('HOOK')) {
+        currentSection = 'hook';
+      } else if (trimmedLine.includes('MAIN CONTENT')) {
+        currentSection = 'mainContent';
+      } else if (trimmedLine.includes('CALL TO ACTION')) {
+        currentSection = 'callToAction';
+      } else if (trimmedLine.includes('HASHTAGS')) {
+        currentSection = 'hashtags';
+      } else if (trimmedLine.includes('FULL CAPTION')) {
+        currentSection = 'fullCaption';
+      } else if (trimmedLine && !trimmedLine.startsWith('**') && !trimmedLine.startsWith('[')) {
+        if (currentSection) {
+          sections[currentSection as keyof typeof sections] += (sections[currentSection as keyof typeof sections] ? '\n' : '') + trimmedLine;
+        }
+      }
+    });
+
+    return sections;
+  };
+
+  const scriptSections = parseScript(generatedScript);
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied!",
+        description: `${label} copied to clipboard.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy to clipboard.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const performanceScores = {
+    hookStrength: 87,
+    viralPotential: 92,
+    engagement: 85,
+    retention: 89
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Script Editor</h1>
+          <p className="text-gray-600 mt-1">
+            Generated from: {originalVideo?.title || 'Viral Template'}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => copyToClipboard(generatedScript, 'Full Script')}>
+            <Copy className="w-4 h-4 mr-2" />
+            Copy All
+          </Button>
+          <Button variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline">
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Content Area */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Mark as Approved
+                </Button>
+                <Button variant="outline">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Schedule Post
+                </Button>
+                <Button variant="outline">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Script
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Script Sections */}
+          <Tabs defaultValue="script" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="script">Script</TabsTrigger>
+              <TabsTrigger value="shortcuts">Shortcuts</TabsTrigger>
+              <TabsTrigger value="notes">Notes</TabsTrigger>
+              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="script" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Hook (First 3-5 seconds)</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(scriptSections.hook, 'Hook')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <p className="text-gray-800 font-medium">{scriptSections.hook}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Main Content</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(scriptSections.mainContent, 'Main Content')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-gray-800 whitespace-pre-line">{scriptSections.mainContent}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Call to Action</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(scriptSections.callToAction, 'Call to Action')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <p className="text-gray-800 font-medium">{scriptSections.callToAction}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Full Caption</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(scriptSections.fullCaption, 'Full Caption')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p className="text-gray-800 whitespace-pre-line">{scriptSections.fullCaption}</p>
+                  </div>
+                  {scriptSections.hashtags && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold mb-2">Suggested Hashtags:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {scriptSections.hashtags.split(/[\s,#]+/).filter(tag => tag.trim()).map((tag, index) => (
+                          <Badge key={index} variant="secondary">#{tag}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="shortcuts">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bookmark className="w-5 h-5" />
+                    Shortcuts & Templates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <textarea
+                    className="w-full h-64 p-3 border rounded-lg resize-none"
+                    placeholder="Add your shortcuts and templates here..."
+                    value={shortcuts}
+                    onChange={(e) => setShortcuts(e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="notes">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <StickyNote className="w-5 h-5" />
+                    Notes & Ideas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <textarea
+                    className="w-full h-64 p-3 border rounded-lg resize-none"
+                    placeholder="Add your notes and ideas here..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="schedule">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Schedule Publishing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Publishing Date</label>
+                      <input type="datetime-local" className="w-full p-2 border rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Platform</label>
+                      <select className="w-full p-2 border rounded-lg">
+                        <option>Instagram</option>
+                        <option>TikTok</option>
+                        <option>YouTube Shorts</option>
+                        <option>LinkedIn</option>
+                      </select>
+                    </div>
+                    <Button className="w-full">Schedule Post</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Performance Sidebar */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Performance Scores</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Hook Strength</span>
+                  <span className="font-semibold">{performanceScores.hookStrength}%</span>
+                </div>
+                <Progress value={performanceScores.hookStrength} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Viral Potential</span>
+                  <span className="font-semibold">{performanceScores.viralPotential}%</span>
+                </div>
+                <Progress value={performanceScores.viralPotential} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Engagement Rate</span>
+                  <span className="font-semibold">{performanceScores.engagement}%</span>
+                </div>
+                <Progress value={performanceScores.engagement} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Retention Score</span>
+                  <span className="font-semibold">{performanceScores.retention}%</span>
+                </div>
+                <Progress value={performanceScores.retention} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Export Options */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Export Options</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="outline" className="w-full justify-start">
+                <FileText className="w-4 h-4 mr-2" />
+                Export as PDF
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <FileText className="w-4 h-4 mr-2" />
+                Save to Notion
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <FileText className="w-4 h-4 mr-2" />
+                Export as Markdown
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Original Video Info */}
+          {originalVideo && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Source Template</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-sm">
+                  <span className="text-gray-600">Author:</span>
+                  <p className="font-medium">{originalVideo.author}</p>
+                </div>
+                <div className="text-sm">
+                  <span className="text-gray-600">Hook Type:</span>
+                  <Badge variant="secondary" className="ml-2">{originalVideo.hookType}</Badge>
+                </div>
+                <div className="text-sm">
+                  <span className="text-gray-600">Industry:</span>
+                  <Badge variant="outline" className="ml-2">{originalVideo.industry}</Badge>
+                </div>
+                <div className="text-sm">
+                  <span className="text-gray-600">Viral Score:</span>
+                  <span className="ml-2 font-bold text-green-600">{originalVideo.viralScore}/10</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

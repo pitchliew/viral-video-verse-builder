@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { X, Play, Link, Download, Star, TrendingUp, Users, Eye, Copy, RefreshCw } from "lucide-react";
 import {
@@ -15,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ScriptEditor } from "./ScriptEditor";
 
 interface Video {
   id: string;
@@ -22,6 +22,7 @@ interface Video {
   thumbnailUrl: string;
   author: string;
   caption: string;
+  script: string; // Added script field
   views: number;
   likes: number;
   comments: number;
@@ -75,6 +76,7 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
   });
   const [generatedScript, setGeneratedScript] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showScriptEditor, setShowScriptEditor] = useState(false);
   const { toast } = useToast();
 
   if (!video) return null;
@@ -103,7 +105,10 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
     try {
       const { data, error } = await supabase.functions.invoke('generate-script-with-claude', {
         body: {
-          video,
+          video: {
+            ...video,
+            originalScript: video.script // Include the original script for AI context
+          },
           customRequirements
         }
       });
@@ -112,9 +117,10 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
 
       if (data.success) {
         setGeneratedScript(data.generatedScript);
+        setShowScriptEditor(true);
         toast({
           title: "Script Generated Successfully!",
-          description: "Your custom script is ready. Check the results below.",
+          description: "Your custom script is ready. Opening script editor...",
         });
       } else {
         throw new Error(data.error || 'Failed to generate script');
@@ -136,7 +142,7 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
       await navigator.clipboard.writeText(text);
       toast({
         title: "Copied to Clipboard",
-        description: "Script has been copied to your clipboard.",
+        description: "Content has been copied to your clipboard.",
       });
     } catch (error) {
       toast({
@@ -155,7 +161,29 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
       voiceTone: 'Casual'
     });
     setGeneratedScript('');
+    setShowScriptEditor(false);
   };
+
+  // If script editor is open, show it instead of the modal
+  if (showScriptEditor && generatedScript) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-0">
+          <ScriptEditor 
+            generatedScript={generatedScript}
+            originalVideo={{
+              title: safeRender(video.title),
+              author: safeRender(video.author),
+              hookType: safeRender(video.hookType),
+              industry: safeRender(video.industry),
+              viralScore: video.viralScore
+            }}
+            onClose={() => setShowScriptEditor(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -296,14 +324,47 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
           <TabsContent value="script" className="space-y-4">
             <Card>
               <CardContent className="p-6">
-                <h4 className="font-semibold mb-3">Original Caption</h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold">Original Script</h4>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => copyToClipboard(video.script || video.caption)}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy
+                  </Button>
+                </div>
                 <div className="bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {safeRender(video.caption)}
+                  <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                    {video.script || video.caption || 'No script available'}
                   </p>
                 </div>
               </CardContent>
             </Card>
+
+            {video.script && video.caption && video.script !== video.caption && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">Original Caption</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => copyToClipboard(video.caption)}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </Button>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                      {safeRender(video.caption)}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="generate" className="space-y-4">
@@ -396,28 +457,6 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
                     Reset
                   </Button>
                 </div>
-
-                {generatedScript && (
-                  <div className="border-t pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h5 className="font-semibold text-lg">Generated Script</h5>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => copyToClipboard(generatedScript)}
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy All
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-white p-4 rounded-lg border max-h-96 overflow-y-auto">
-                      <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
-                        {generatedScript}
-                      </pre>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>

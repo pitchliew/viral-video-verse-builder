@@ -8,6 +8,7 @@ interface Video {
   thumbnailUrl: string;
   author: string;
   caption: string;
+  script: string; // Added script field
   views: number;
   likes: number;
   comments: number;

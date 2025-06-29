@@ -44,6 +44,7 @@ Key principles:
 - Views: ${video.views}
 - Engagement Rate: ${((video.likes + video.comments + video.shares) / video.views * 100).toFixed(1)}%
 - Original Caption: ${video.caption}
+- Original Script: ${video.script || video.originalScript || 'Not available'}
 - Why This Works: ${video.whyThisWorks}
 
 CREATE A CUSTOM SCRIPT with these requirements:
@@ -52,7 +53,7 @@ CREATE A CUSTOM SCRIPT with these requirements:
 - Duration: ${customRequirements.duration}
 - Voice Tone: ${customRequirements.voiceTone}
 
-IMPORTANT: Use the successful elements from the original viral video (hook style, engagement tactics, viral triggers) but adapt them for the new brand/audience.
+IMPORTANT: Use the successful elements from the original viral video (hook style, engagement tactics, viral triggers) and the original script structure but adapt them for the new brand/audience.
 
 Format your response EXACTLY like this:
 

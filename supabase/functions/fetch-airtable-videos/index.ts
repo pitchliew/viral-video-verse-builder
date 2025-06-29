@@ -87,6 +87,7 @@ serve(async (req) => {
         thumbnailUrl: fields['thumbnail'] && fields['thumbnail'][0] ? fields['thumbnail'][0].url : 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=600&fit=crop',
         author: safeString(fields['username'] || fields['Author']) || 'Unknown Author',
         caption: safeString(fields['Caption*'] || fields['captions'] || fields['Caption']) || '',
+        script: safeString(fields['Script*'] || fields['Script'] || fields['Output']) || '', // Added script mapping
         views: safeNumber(fields['Views*'] || fields['_Views'] || fields['Views']),
         likes: safeNumber(fields['Likes*'] || fields['_Likes'] || fields['Likes']),
         comments: safeNumber(fields['Comments*'] || fields['comments'] || fields['Comments']),
