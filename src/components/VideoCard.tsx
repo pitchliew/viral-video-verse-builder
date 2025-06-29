@@ -13,7 +13,7 @@ interface Video {
   likes: number;
   comments: number;
   shares: number;
-  followers: number;
+  followers: string | number;
   hookType: string;
   industry: string;
   videoObjective: string;
@@ -36,6 +36,14 @@ const formatNumber = (num: number): string => {
   return num.toString();
 };
 
+// Helper function to safely render values
+const safeRender = (value: any): string => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return value.toString();
+  if (value && typeof value === 'object' && value.value) return String(value.value);
+  return String(value || '');
+};
+
 export const VideoCard = ({ video }: VideoCardProps) => {
   const getScoreColor = (score: number) => {
     if (score >= 9) return "text-green-600 bg-green-100";
@@ -48,7 +56,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
       <div className="relative">
         <img 
           src={video.thumbnailUrl} 
-          alt={video.title}
+          alt={safeRender(video.title)}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 right-3">
@@ -58,7 +66,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
         </div>
         <div className="absolute bottom-3 left-3">
           <Badge variant="secondary" className="bg-black/70 text-white border-0">
-            {video.hookType}
+            {safeRender(video.hookType)}
           </Badge>
         </div>
       </div>
@@ -66,18 +74,18 @@ export const VideoCard = ({ video }: VideoCardProps) => {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <User className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">{video.author}</span>
+          <span className="text-sm font-medium text-gray-700">{safeRender(video.author)}</span>
           <Badge variant="outline" className="ml-auto text-xs">
-            {video.industry}
+            {safeRender(video.industry)}
           </Badge>
         </div>
 
         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-          {video.title}
+          {safeRender(video.title)}
         </h3>
 
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {video.caption}
+          {safeRender(video.caption)}
         </p>
 
         {/* Engagement Stats */}
@@ -103,7 +111,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
         {/* Why This Works */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg">
           <p className="text-xs text-gray-600 mb-1 font-medium">Why This Works:</p>
-          <p className="text-xs text-gray-700 line-clamp-2">{video.whyThisWorks}</p>
+          <p className="text-xs text-gray-700 line-clamp-2">{safeRender(video.whyThisWorks)}</p>
         </div>
       </CardContent>
     </Card>

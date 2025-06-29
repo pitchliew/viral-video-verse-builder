@@ -16,14 +16,10 @@ serve(async (req) => {
   try {
     console.log('Starting Airtable fetch...');
     
-    const airtableToken = Deno.env.get('AIRTABLE_ID_V2');
+    // Use the new personal access token
+    const airtableToken = 'patz2aNgR1k7yCu2a.002f5bcc28fb876dea2a6072ded3d987e47281c15847211420c36df69244ee32';
     
-    if (!airtableToken) {
-      console.error('Airtable token not found in environment variables');
-      throw new Error('Airtable token not found in environment variables');
-    }
-
-    console.log('Airtable token found, making request...');
+    console.log('Using personal access token for Airtable request...');
 
     const baseId = 'appgdsZTvVy6L3nhj';
     const tableName = 'tbll1vtFU4cf40F20';
@@ -59,29 +55,49 @@ serve(async (req) => {
     console.log(`Found ${data.records.length} records`);
     
     // Transform Airtable records to match your app's video interface
-    // Based on the logs, I'll map the actual field names from your Airtable
     const videos = data.records.map((record: any, index: number) => {
       console.log(`Processing record ${index}:`, record.fields);
       
       const fields = record.fields;
       
+      // Helper function to safely extract string values from objects
+      const safeString = (value: any): string => {
+        if (typeof value === 'string') return value;
+        if (value && typeof value === 'object' && value.value) return String(value.value);
+        return '';
+      };
+
+      // Helper function to safely extract numbers from formatted strings
+      const safeNumber = (value: any): number => {
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+          // Handle formatted numbers like "93K", "1.2M"
+          const cleanValue = value.replace(/[^\d.]/g, '');
+          const num = parseFloat(cleanValue);
+          if (value.includes('K')) return num * 1000;
+          if (value.includes('M')) return num * 1000000;
+          return num || 0;
+        }
+        return 0;
+      };
+      
       return {
         id: record.id,
-        videoUrl: fields['Video Url'] || fields['Video URL'] || fields['_Video Url'] || '',
+        videoUrl: safeString(fields['Video Url'] || fields['Video URL'] || fields['_Video Url']) || '',
         thumbnailUrl: fields['thumbnail'] && fields['thumbnail'][0] ? fields['thumbnail'][0].url : 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=600&fit=crop',
-        author: fields['username'] || fields['Author'] || 'Unknown Author',
-        caption: fields['Caption*'] || fields['captions'] || fields['Caption'] || '',
-        views: Number(fields['Views*']?.replace(/[K|M]/g, '').replace(/K/g, '000').replace(/M/g, '000000')) || Number(fields['_Views']) || Number(fields['Views']) || 0,
-        likes: Number(fields['Likes*']?.replace(/[K|M]/g, '').replace(/K/g, '000').replace(/M/g, '000000')) || Number(fields['_Likes']) || Number(fields['Likes']) || 0,
-        comments: Number(fields['Comments*']) || Number(fields['comments']) || Number(fields['Comments']) || 0,
-        shares: Number(fields['Shares']) || 0,
-        followers: fields['Followers*'] || fields['followers'] || 0,
-        hookType: fields['Hook type*'] || fields['hook type'] || fields['Hook Type'] || 'Unknown',
-        industry: fields['Industry/Niche*'] && Array.isArray(fields['Industry/Niche*']) ? fields['Industry/Niche*'][0] : fields['industry/niche'] || fields['Industry'] || 'Unknown',
-        videoObjective: fields['Video Objective'] || 'Unknown',
-        title: fields['Reel Title'] || fields['Title'] || 'Untitled Video',
-        whyThisWorks: fields['Why this works*'] || fields['why this works'] || 'Analysis not available',
-        viralScore: Number(fields['Viral Score']) || 0
+        author: safeString(fields['username'] || fields['Author']) || 'Unknown Author',
+        caption: safeString(fields['Caption*'] || fields['captions'] || fields['Caption']) || '',
+        views: safeNumber(fields['Views*'] || fields['_Views'] || fields['Views']),
+        likes: safeNumber(fields['Likes*'] || fields['_Likes'] || fields['Likes']),
+        comments: safeNumber(fields['Comments*'] || fields['comments'] || fields['Comments']),
+        shares: safeNumber(fields['Shares']) || 0,
+        followers: safeString(fields['Followers*'] || fields['followers']) || '0',
+        hookType: safeString(fields['Hook type*'] || fields['hook type'] || fields['Hook Type']) || 'Unknown',
+        industry: fields['Industry/Niche*'] && Array.isArray(fields['Industry/Niche*']) ? fields['Industry/Niche*'][0] : safeString(fields['industry/niche'] || fields['Industry']) || 'Unknown',
+        videoObjective: safeString(fields['Video Objective']) || 'Unknown',
+        title: safeString(fields['Reel Title'] || fields['Title']) || 'Untitled Video',
+        whyThisWorks: safeString(fields['Why this works*'] || fields['why this works']) || 'Analysis not available',
+        viralScore: safeNumber(fields['Viral Score']) || 0
       };
     });
 
