@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Copy, Download, Share2, CheckCircle, FileText, Bookmark, StickyNote, Save, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,33 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
   const scriptSections = existingScript?.script_sections || parseScript(generatedScript);
   const currentSections = isEditing ? { ...scriptSections, ...editedSections } : scriptSections;
 
+  // Function to reconstruct script content from sections
+  const reconstructScriptFromSections = (sections: any) => {
+    let reconstructed = '';
+    
+    if (sections.hook) {
+      reconstructed += `**HOOK**\n${sections.hook}\n\n`;
+    }
+    
+    if (sections.mainContent) {
+      reconstructed += `**MAIN CONTENT**\n${sections.mainContent}\n\n`;
+    }
+    
+    if (sections.callToAction) {
+      reconstructed += `**CALL TO ACTION**\n${sections.callToAction}\n\n`;
+    }
+    
+    if (sections.hashtags) {
+      reconstructed += `**HASHTAGS**\n${sections.hashtags}\n\n`;
+    }
+    
+    if (sections.fullCaption) {
+      reconstructed += `**FULL CAPTION**\n${sections.fullCaption}`;
+    }
+    
+    return reconstructed.trim();
+  };
+
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -91,9 +119,14 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
   const handleSaveScript = async (data: { title: string; description?: string }) => {
     setIsSaving(true);
     try {
+      // Use reconstructed content if we have edited sections, otherwise use original
+      const contentToSave = Object.keys(editedSections).length > 0 
+        ? reconstructScriptFromSections(currentSections)
+        : generatedScript;
+
       const scriptData = {
         title: data.title,
-        content: generatedScript,
+        content: contentToSave,
         script_sections: currentSections,
         original_video_data: originalVideo,
       };
@@ -123,9 +156,13 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
     if (isEditing && existingScript) {
       // Auto-save when leaving edit mode
       const updatedSections = { ...scriptSections, ...editedSections };
+      const updatedContent = Object.keys(editedSections).length > 0 
+        ? reconstructScriptFromSections(updatedSections)
+        : generatedScript;
+        
       updateScript(existingScript.id, {
         script_sections: updatedSections,
-        content: generatedScript // You might want to reconstruct this from sections
+        content: updatedContent
       });
     }
     setIsEditing(!isEditing);
@@ -149,7 +186,12 @@ export const ScriptEditor = ({ generatedScript, originalVideo, onClose, existing
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => copyToClipboard(generatedScript, 'Full Script')}>
+          <Button variant="outline" onClick={() => copyToClipboard(
+            Object.keys(editedSections).length > 0 
+              ? reconstructScriptFromSections(currentSections)
+              : generatedScript, 
+            'Full Script'
+          )}>
             <Copy className="w-4 h-4 mr-2" />
             Copy All
           </Button>
