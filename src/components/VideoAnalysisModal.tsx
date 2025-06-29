@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { X, Play, Link, Download, Star, TrendingUp, Users, Eye, Copy, RefreshCw, Plus } from "lucide-react";
 import {
@@ -333,17 +332,6 @@ export const VideoAnalysisModal = ({ video, isOpen, onClose }: VideoAnalysisModa
                   <Star className="w-4 h-4 text-yellow-500" />
                   <span className="font-semibold">{safeRender(video.hookType)}</span>
                 </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Link className="w-4 h-4 mr-2" />
-                  Copy Link
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
               </div>
             </div>
           </div>
