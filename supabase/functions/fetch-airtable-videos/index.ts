@@ -59,26 +59,29 @@ serve(async (req) => {
     console.log(`Found ${data.records.length} records`);
     
     // Transform Airtable records to match your app's video interface
+    // Based on the logs, I'll map the actual field names from your Airtable
     const videos = data.records.map((record: any, index: number) => {
       console.log(`Processing record ${index}:`, record.fields);
       
+      const fields = record.fields;
+      
       return {
         id: record.id,
-        videoUrl: record.fields['Video URL'] || '',
-        thumbnailUrl: record.fields['Thumbnail URL'] || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=600&fit=crop',
-        author: record.fields['Author'] || 'Unknown Author',
-        caption: record.fields['Caption'] || '',
-        views: Number(record.fields['Views']) || 0,
-        likes: Number(record.fields['Likes']) || 0,
-        comments: Number(record.fields['Comments']) || 0,
-        shares: Number(record.fields['Shares']) || 0,
-        followers: Number(record.fields['Followers']) || 0,
-        hookType: record.fields['Hook Type'] || 'Unknown',
-        industry: record.fields['Industry'] || 'Unknown',
-        videoObjective: record.fields['Video Objective'] || 'Unknown',
-        title: record.fields['Title'] || 'Untitled Video',
-        whyThisWorks: record.fields['Why This Works'] || 'Analysis not available',
-        viralScore: Number(record.fields['Viral Score']) || 0
+        videoUrl: fields['Video Url'] || fields['Video URL'] || fields['_Video Url'] || '',
+        thumbnailUrl: fields['thumbnail'] && fields['thumbnail'][0] ? fields['thumbnail'][0].url : 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=600&fit=crop',
+        author: fields['username'] || fields['Author'] || 'Unknown Author',
+        caption: fields['Caption*'] || fields['captions'] || fields['Caption'] || '',
+        views: Number(fields['Views*']?.replace(/[K|M]/g, '').replace(/K/g, '000').replace(/M/g, '000000')) || Number(fields['_Views']) || Number(fields['Views']) || 0,
+        likes: Number(fields['Likes*']?.replace(/[K|M]/g, '').replace(/K/g, '000').replace(/M/g, '000000')) || Number(fields['_Likes']) || Number(fields['Likes']) || 0,
+        comments: Number(fields['Comments*']) || Number(fields['comments']) || Number(fields['Comments']) || 0,
+        shares: Number(fields['Shares']) || 0,
+        followers: fields['Followers*'] || fields['followers'] || 0,
+        hookType: fields['Hook type*'] || fields['hook type'] || fields['Hook Type'] || 'Unknown',
+        industry: fields['Industry/Niche*'] && Array.isArray(fields['Industry/Niche*']) ? fields['Industry/Niche*'][0] : fields['industry/niche'] || fields['Industry'] || 'Unknown',
+        videoObjective: fields['Video Objective'] || 'Unknown',
+        title: fields['Reel Title'] || fields['Title'] || 'Untitled Video',
+        whyThisWorks: fields['Why this works*'] || fields['why this works'] || 'Analysis not available',
+        viralScore: Number(fields['Viral Score']) || 0
       };
     });
 
