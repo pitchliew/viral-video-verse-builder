@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const airtableToken = Deno.env.get('AIRTABLE ID v2');
+    const airtableToken = Deno.env.get('AIRTABLE_ID_V2');
     
     if (!airtableToken) {
       throw new Error('Airtable token not found in environment variables');
