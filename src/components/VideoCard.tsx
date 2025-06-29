@@ -1,18 +1,20 @@
 
 import { useState } from "react";
-import { Eye, Heart, MessageCircle, Share2, User, Play, TrendingUp } from "lucide-react";
+import { Eye, Heart, MessageCircle, Share2, User, Play, TrendingUp, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VideoAnalysisModal } from "./VideoAnalysisModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface Video {
   id: string;
   videoUrl: string;
+  videoLink?: string;
   thumbnailUrl: string;
   author: string;
   caption: string;
-  script: string; // Added script field
+  script: string;
   views: number;
   likes: number;
   comments: number;
@@ -49,11 +51,36 @@ const safeRender = (value: any): string => {
 
 export const VideoCard = ({ video }: VideoCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const getScoreColor = (score: number) => {
     if (score >= 9) return "text-green-600 bg-green-100";
     if (score >= 7) return "text-yellow-600 bg-yellow-100";
     return "text-red-600 bg-red-100";
+  };
+
+  const handleVideoClick = () => {
+    if (video.videoLink) {
+      // Open the Instagram URL in a new tab
+      window.open(video.videoLink, '_blank', 'noopener,noreferrer');
+      toast({
+        title: "Opening Video",
+        description: "Redirecting to Instagram to view the original video...",
+      });
+    } else if (video.videoUrl) {
+      // Fallback to videoUrl if available
+      window.open(video.videoUrl, '_blank', 'noopener,noreferrer');
+      toast({
+        title: "Opening Video",
+        description: "Redirecting to view the original video...",
+      });
+    } else {
+      toast({
+        title: "Video Not Available",
+        description: "The video link is not available for this content.",
+        variant: "destructive",
+      });
+    }
   };
 
   const engagementRate = ((video.likes + video.comments + video.shares) / video.views * 100).toFixed(1);
@@ -62,7 +89,7 @@ export const VideoCard = ({ video }: VideoCardProps) => {
     <>
       <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white border-0 shadow-lg">
         {/* Enhanced Thumbnail Section */}
-        <div className="relative aspect-[9/16] overflow-hidden">
+        <div className="relative aspect-[9/16] overflow-hidden cursor-pointer" onClick={handleVideoClick}>
           <img 
             src={video.thumbnailUrl} 
             alt={safeRender(video.title)}
@@ -75,6 +102,16 @@ export const VideoCard = ({ video }: VideoCardProps) => {
               <Play className="w-6 h-6 text-purple-600 ml-1" />
             </div>
           </div>
+
+          {/* External Link Icon */}
+          {video.videoLink && (
+            <div className="absolute bottom-3 right-3">
+              <Badge className="bg-black/70 text-white border-0 backdrop-blur-sm flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" />
+                Watch
+              </Badge>
+            </div>
+          )}
 
           {/* Viral Score Badge */}
           <div className="absolute top-3 right-3">

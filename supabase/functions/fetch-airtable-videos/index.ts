@@ -80,14 +80,22 @@ serve(async (req) => {
         }
         return 0;
       };
+
+      // Helper function to extract URL from button object
+      const extractVideoLink = (value: any): string => {
+        if (typeof value === 'string') return value;
+        if (value && typeof value === 'object' && value.url) return value.url;
+        return '';
+      };
       
       return {
         id: record.id,
         videoUrl: safeString(fields['Video Url'] || fields['Video URL'] || fields['_Video Url']) || '',
+        videoLink: extractVideoLink(fields['Video Link']) || extractVideoLink(fields['fldOXCgmj3INPSctx']) || '',
         thumbnailUrl: fields['thumbnail'] && fields['thumbnail'][0] ? fields['thumbnail'][0].url : 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=600&fit=crop',
         author: safeString(fields['username'] || fields['Author']) || 'Unknown Author',
         caption: safeString(fields['Caption*'] || fields['captions'] || fields['Caption']) || '',
-        script: safeString(fields['Script*'] || fields['Output'] || fields['Script*fld7TBO1kV2vzChKG']) || '', // Updated script mapping with the specific field ID
+        script: safeString(fields['Script*'] || fields['Output'] || fields['Script*fld7TBO1kV2vzChKG']) || '',
         views: safeNumber(fields['Views*'] || fields['_Views'] || fields['Views']),
         likes: safeNumber(fields['Likes*'] || fields['_Likes'] || fields['Likes']),
         comments: safeNumber(fields['Comments*'] || fields['comments'] || fields['Comments']),

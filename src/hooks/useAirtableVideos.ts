@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 interface Video {
   id: string;
   videoUrl: string;
+  videoLink?: string;  // Added video link field
   thumbnailUrl: string;
   author: string;
   caption: string;
-  script: string; // Added script field
+  script: string;
   views: number;
   likes: number;
   comments: number;
