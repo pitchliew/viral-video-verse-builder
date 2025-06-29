@@ -1,17 +1,53 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { useMemo } from "react";
 
 interface FilterBarProps {
   onFilter: (industry: string, hookType: string) => void;
   selectedIndustry: string;
   selectedHook: string;
+  allVideos: any[];
 }
 
-const industries = ["All", "Productivity", "Technology", "Fitness", "Business", "Entertainment"];
-const hookTypes = ["All", "Question Hook", "Problem/Solution", "Time Promise", "Outcome Promise"];
+export const FilterBar = ({ onFilter, selectedIndustry, selectedHook, allVideos }: FilterBarProps) => {
+  // Extract unique industries from the actual data
+  const industries = useMemo(() => {
+    const uniqueIndustries = new Set<string>();
+    uniqueIndustries.add("All");
+    
+    allVideos.forEach(video => {
+      if (video.industry) {
+        // Handle both array and string formats
+        if (Array.isArray(video.industry)) {
+          video.industry.forEach((ind: string) => {
+            if (ind && ind.trim()) {
+              uniqueIndustries.add(ind.trim());
+            }
+          });
+        } else if (typeof video.industry === 'string' && video.industry.trim()) {
+          uniqueIndustries.add(video.industry.trim());
+        }
+      }
+    });
+    
+    return Array.from(uniqueIndustries).sort();
+  }, [allVideos]);
 
-export const FilterBar = ({ onFilter, selectedIndustry, selectedHook }: FilterBarProps) => {
+  // Extract unique hook types from the actual data
+  const hookTypes = useMemo(() => {
+    const uniqueHookTypes = new Set<string>();
+    uniqueHookTypes.add("All");
+    
+    allVideos.forEach(video => {
+      if (video.hookType && typeof video.hookType === 'string' && video.hookType.trim()) {
+        uniqueHookTypes.add(video.hookType.trim());
+      }
+    });
+    
+    return Array.from(uniqueHookTypes).sort();
+  }, [allVideos]);
+
   const handleIndustryChange = (value: string) => {
     onFilter(value, selectedHook);
   };
@@ -28,9 +64,9 @@ export const FilterBar = ({ onFilter, selectedIndustry, selectedHook }: FilterBa
           
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">Industry</label>
+              <label className="text-sm font-medium text-gray-700">Industry ({industries.length - 1} available)</label>
               <Select value={selectedIndustry} onValueChange={handleIndustryChange}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-white">
+                <SelectTrigger className="w-full sm:w-[200px] bg-white">
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
                 <SelectContent>
@@ -44,9 +80,9 @@ export const FilterBar = ({ onFilter, selectedIndustry, selectedHook }: FilterBa
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">Hook Type</label>
+              <label className="text-sm font-medium text-gray-700">Hook Type ({hookTypes.length - 1} available)</label>
               <Select value={selectedHook} onValueChange={handleHookChange}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-white">
+                <SelectTrigger className="w-full sm:w-[200px] bg-white">
                   <SelectValue placeholder="Select hook type" />
                 </SelectTrigger>
                 <SelectContent>

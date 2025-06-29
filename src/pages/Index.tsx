@@ -3,24 +3,32 @@ import { useState, useEffect } from "react";
 import { VideoCard } from "../components/VideoCard";
 import { FilterBar } from "../components/FilterBar";
 import { StatsOverview } from "../components/StatsOverview";
+import { VideoPagination } from "../components/VideoPagination";
 import { useAirtableVideos } from "../hooks/useAirtableVideos";
+
+const VIDEOS_PER_PAGE = 12;
 
 const Index = () => {
   const { videos: allVideos, loading, error } = useAirtableVideos();
   const [filteredVideos, setFilteredVideos] = useState(allVideos);
   const [selectedIndustry, setSelectedIndustry] = useState("All");
   const [selectedHook, setSelectedHook] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Update filtered videos when allVideos changes
   useEffect(() => {
     setFilteredVideos(allVideos);
+    setCurrentPage(1); // Reset to first page when data changes
   }, [allVideos]);
 
   const handleFilter = (industry: string, hookType: string) => {
     let filtered = allVideos;
     
     if (industry !== "All") {
-      filtered = filtered.filter(video => video.industry === industry);
+      filtered = filtered.filter(video => {
+        const videoIndustry = Array.isArray(video.industry) ? video.industry[0] : video.industry;
+        return videoIndustry === industry;
+      });
     }
     
     if (hookType !== "All") {
@@ -30,6 +38,19 @@ const Index = () => {
     setFilteredVideos(filtered);
     setSelectedIndustry(industry);
     setSelectedHook(hookType);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredVideos.length / VIDEOS_PER_PAGE);
+  const startIndex = (currentPage - 1) * VIDEOS_PER_PAGE;
+  const endIndex = startIndex + VIDEOS_PER_PAGE;
+  const currentVideos = filteredVideos.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (loading) {
@@ -64,7 +85,7 @@ const Index = () => {
               Viral Video Analytics
             </h1>
             <p className="text-gray-600 text-lg">
-              Discover what makes content go viral
+              Discover what makes content go viral - {filteredVideos.length} videos found
             </p>
           </div>
         </div>
@@ -72,21 +93,31 @@ const Index = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Overview */}
-        <StatsOverview videos={filteredVideos} />
+        <StatsOverview videos={currentVideos} />
 
         {/* Filter Bar */}
         <FilterBar 
           onFilter={handleFilter}
           selectedIndustry={selectedIndustry}
           selectedHook={selectedHook}
+          allVideos={allVideos}
         />
 
         {/* Videos Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredVideos.map((video) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+          {currentVideos.map((video) => (
             <VideoCard key={video.id} video={video} />
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <VideoPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
 
         {filteredVideos.length === 0 && !loading && (
           <div className="text-center py-12">
