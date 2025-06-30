@@ -3,7 +3,7 @@ import { CyberCard, CyberCardContent, CyberCardHeader, CyberCardTitle } from "@/
 import { CyberButton } from "@/components/ui/cyber-button";
 import { CyberInput } from "@/components/ui/cyber-input";
 import { CyberBadge } from "@/components/ui/cyber-badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -184,6 +184,20 @@ export const TemplateModal = ({ video, isOpen, onClose }: TemplateModalProps) =>
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-cyber-bg-primary border border-cyber-accent-pink/30 shadow-[0_0_30px_rgba(255,0,128,0.3)]">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold text-cyber-text-primary">
+              Customize Template
+            </DialogTitle>
+            <button
+              onClick={onClose}
+              className="text-cyber-text-muted hover:text-cyber-accent-pink transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </DialogHeader>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
           {/* Left Side - Video Preview & Analysis */}
           <div className="space-y-6">
@@ -293,18 +307,6 @@ export const TemplateModal = ({ video, isOpen, onClose }: TemplateModalProps) =>
 
           {/* Right Side - Customization Form */}
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-cyber-text-primary">
-                Customize Template
-              </h2>
-              <button
-                onClick={onClose}
-                className="text-cyber-text-muted hover:text-cyber-accent-pink transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
             <CyberCard>
               <CyberCardContent className="p-6 space-y-6">
                 {/* Brand Selection */}
