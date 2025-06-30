@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Cyberpunk Styles */
+@import url('./styles/cyberpunk.css');
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -39,20 +42,25 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Cyberpunk Colors */
+    --cyber-bg-primary: 10 10% 6%;
+    --cyber-bg-secondary: 220 26% 18%;
+    --cyber-bg-tertiary: 220 20% 25%;
+    --cyber-accent-pink: 320 100% 50%;
+    --cyber-accent-blue: 195 100% 50%;
+    --cyber-accent-green: 150 100% 50%;
+    --cyber-accent-purple: 260 75% 65%;
+    --cyber-text-primary: 0 0% 100%;
+    --cyber-text-secondary: 0 0% 70%;
+    --cyber-text-muted: 0 0% 42%;
   }
 
   .dark {
@@ -101,5 +109,89 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+  /* Cyberpunk Global Overrides */
+  .cyber-theme {
+    background: hsl(var(--cyber-bg-primary));
+    color: hsl(var(--cyber-text-primary));
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--cyber-bg-secondary));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, hsl(var(--cyber-accent-pink)), hsl(var(--cyber-accent-purple)));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, hsl(var(--cyber-accent-purple)), hsl(var(--cyber-accent-blue)));
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}
+
+/* Framer Motion Animations */
+.page-transition {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Select Styling */
+.cyber-input select {
+  background: rgba(26, 26, 46, 0.6);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.cyber-input select:focus {
+  border-color: hsl(var(--cyber-accent-blue));
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  outline: none;
+}
+
+.cyber-input select option {
+  background: hsl(var(--cyber-bg-secondary));
+  color: hsl(var(--cyber-text-primary));
 }
