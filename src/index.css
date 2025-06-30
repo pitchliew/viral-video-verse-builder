@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Cyberpunk Styles */
+/* Import Enhanced Cyberpunk Styles */
 @import url('./styles/cyberpunk.css');
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
@@ -50,7 +50,7 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Cyberpunk Colors */
+    /* Enhanced Cyberpunk Colors with Better Contrast */
     --cyber-bg-primary: 10 10% 6%;
     --cyber-bg-secondary: 220 26% 18%;
     --cyber-bg-tertiary: 220 20% 25%;
@@ -58,9 +58,9 @@ All colors MUST be HSL.
     --cyber-accent-blue: 195 100% 50%;
     --cyber-accent-green: 150 100% 50%;
     --cyber-accent-purple: 260 75% 65%;
-    --cyber-text-primary: 0 0% 100%;
-    --cyber-text-secondary: 0 0% 70%;
-    --cyber-text-muted: 0 0% 42%;
+    --cyber-text-primary: 0 0% 98%;
+    --cyber-text-secondary: 210 20% 85%;
+    --cyber-text-muted: 215 15% 65%;
   }
 
   .dark {
@@ -109,39 +109,76 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-variation-settings: 'opsz' 32;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Cyberpunk Global Overrides */
+  /* Enhanced Cyberpunk Global Overrides */
   .cyber-theme {
-    background: hsl(var(--cyber-bg-primary));
+    background: linear-gradient(135deg, hsl(var(--cyber-bg-primary)), hsl(var(--cyber-bg-secondary)));
     color: hsl(var(--cyber-text-primary));
+    min-height: 100vh;
   }
 
-  /* Custom Scrollbar */
+  /* Enhanced Typography Scale */
+  h1, .h1 {
+    @apply cyber-heading-1;
+  }
+
+  h2, .h2 {
+    @apply cyber-heading-2;
+  }
+
+  h3, .h3 {
+    @apply cyber-heading-3;
+  }
+
+  p, .body-text {
+    @apply cyber-body-text;
+  }
+
+  small, .small-text {
+    @apply cyber-small-text;
+  }
+
+  /* Enhanced Custom Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
+    height: 12px;
   }
 
   ::-webkit-scrollbar-track {
     background: hsl(var(--cyber-bg-secondary));
+    border-radius: 6px;
   }
 
   ::-webkit-scrollbar-thumb {
     background: linear-gradient(45deg, hsl(var(--cyber-accent-pink)), hsl(var(--cyber-accent-purple)));
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 2px solid hsl(var(--cyber-bg-secondary));
+    transition: all 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(45deg, hsl(var(--cyber-accent-purple)), hsl(var(--cyber-accent-blue)));
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
   }
 
-  /* Line clamp utilities */
+  ::-webkit-scrollbar-corner {
+    background: hsl(var(--cyber-bg-secondary));
+  }
+
+  /* Enhanced Line Clamp Utilities */
   .line-clamp-1 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
+    line-height: 1.5;
   }
 
   .line-clamp-2 {
@@ -149,6 +186,7 @@ All colors MUST be HSL.
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-height: 1.5;
   }
 
   .line-clamp-3 {
@@ -156,42 +194,140 @@ All colors MUST be HSL.
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+    line-height: 1.5;
+  }
+
+  /* Enhanced Selection Styles */
+  ::selection {
+    background: hsl(var(--cyber-accent-pink) / 0.3);
+    color: hsl(var(--cyber-text-primary));
+  }
+
+  ::-moz-selection {
+    background: hsl(var(--cyber-accent-pink) / 0.3);
+    color: hsl(var(--cyber-text-primary));
   }
 }
 
-/* Framer Motion Animations */
+/* Enhanced Framer Motion Animations */
 .page-transition {
-  animation: fadeInUp 0.5s ease-out;
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* Custom Select Styling */
+/* Enhanced Custom Select Styling */
 .cyber-input select {
-  background: rgba(26, 26, 46, 0.6);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  border-radius: 8px;
-  color: white;
-  padding: 12px 16px;
-  transition: all 0.3s ease;
+  background: rgba(26, 26, 46, 0.8);
+  border: 2px solid rgba(0, 212, 255, 0.4);
+  border-radius: 12px;
+  color: hsl(var(--cyber-text-primary));
+  padding: 16px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
 }
 
 .cyber-input select:focus {
   border-color: hsl(var(--cyber-accent-blue));
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.3);
   outline: none;
+  background: rgba(26, 26, 46, 0.95);
 }
 
 .cyber-input select option {
   background: hsl(var(--cyber-bg-secondary));
   color: hsl(var(--cyber-text-primary));
+  padding: 12px;
+  font-weight: 500;
+}
+
+/* Enhanced Focus Indicators */
+.focus-visible {
+  outline: 2px solid hsl(var(--cyber-accent-blue));
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Enhanced Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, 
+    rgba(26, 26, 46, 0.8) 25%, 
+    rgba(0, 212, 255, 0.1) 50%, 
+    rgba(26, 26, 46, 0.8) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Enhanced Utility Classes */
+.cyber-glass {
+  background: rgba(26, 26, 46, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cyber-gradient-text {
+  background: linear-gradient(135deg, hsl(var(--cyber-accent-pink)), hsl(var(--cyber-accent-blue)));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cyber-shadow-glow {
+  box-shadow: 0 0 20px rgba(255, 0, 128, 0.3), 0 0 40px rgba(0, 212, 255, 0.2);
+}
+
+/* Enhanced Responsive Typography */
+@media (max-width: 768px) {
+  .cyber-heading-1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+  
+  .cyber-heading-2 {
+    font-size: 2rem;
+    line-height: 1.3;
+  }
+  
+  .cyber-heading-3 {
+    font-size: 1.5rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 480px) {
+  .cyber-heading-1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .cyber-heading-2 {
+    font-size: 1.75rem;
+    line-height: 1.3;
+  }
+  
+  .cyber-heading-3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
 }
