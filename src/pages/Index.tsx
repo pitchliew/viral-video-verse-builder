@@ -120,7 +120,7 @@ const Index = () => {
           <div className="flex justify-between items-center mb-6">
             <div className="text-center flex-1">
               <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-                Viral Video Vault
+                ViralHooks
               </h1>
               <p className="text-gray-600 text-xl mb-2">
                 Decode the secrets behind viral content

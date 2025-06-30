@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CyberButton } from "@/components/ui/cyber-button";
 import { CyberCard, CyberCardContent, CyberCardHeader, CyberCardTitle, CyberCardDescription } from "@/components/ui/cyber-card";
 import { CyberBadge } from "@/components/ui/cyber-badge";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 import { 
   Zap, 
   Target, 
@@ -59,7 +60,7 @@ const LandingPage = () => {
     {
       name: "Sarah Chen",
       role: "Content Creator",
-      content: "Increased my average views by 400% using Viralhooks templates. The AI suggestions are incredible!",
+      content: "Increased my average views by 400% using ViralHooks templates. The AI suggestions are incredible!",
       avatar: "SC"
     },
     {
@@ -77,92 +78,73 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyber-bg-primary via-cyber-bg-secondary to-cyber-bg-primary">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyber-accent-pink/10 to-cyber-accent-blue/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
+    <div className="min-h-screen">
+      {/* Hero Section with 21st Dev Component */}
+      <HeroGeometric 
+        badge="🚀 AI-Powered Viral Engine"
+        title1="ViralHooks"
+        title2="Decode Viral Content"
+      />
+
+      {/* Navigation Overlay */}
+      <div className="absolute top-8 right-8 z-50">
+        <div className="flex gap-4">
+          <CyberButton 
+            variant="outline" 
+            onClick={() => navigate("/library")}
+            className="backdrop-blur-md bg-white/10"
           >
-            <CyberBadge variant="secondary" glow className="mb-6">
-              🚀 AI-Powered Viral Engine
-            </CyberBadge>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-8">
-              <span className="bg-gradient-to-r from-cyber-accent-pink via-cyber-accent-purple to-cyber-accent-blue bg-clip-text text-transparent">
-                AI-Powered
-              </span>
-              <br />
-              <span className="text-cyber-text-primary">
-                Viral Video Script Engine
-              </span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-cyber-text-secondary mb-12 max-w-3xl mx-auto leading-relaxed">
-              Transform any viral video into a custom script for your brand. 
-              Decode viral formulas, generate scripts, and create content that actually goes viral.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <CyberButton 
-                size="lg" 
-                onClick={() => navigate("/auth")}
-                className="group"
-              >
-                Start Creating
-                <Rocket className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </CyberButton>
-              
-              <CyberButton 
-                variant="outline" 
-                size="lg"
-                onClick={() => navigate("/library")}
-                className="group"
-              >
-                <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                Explore Templates
-              </CyberButton>
-            </div>
-            
-            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-center"
-              >
-                <div className="text-3xl font-bold text-cyber-accent-pink mb-2">10,000+</div>
-                <div className="text-cyber-text-secondary">Viral Templates</div>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-center"
-              >
-                <div className="text-3xl font-bold text-cyber-accent-blue mb-2">95%</div>
-                <div className="text-cyber-text-secondary">Success Rate</div>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="text-center"
-              >
-                <div className="text-3xl font-bold text-cyber-accent-green mb-2">50M+</div>
-                <div className="text-cyber-text-secondary">Views Generated</div>
-              </motion.div>
-            </div>
-          </motion.div>
+            <Play className="w-4 h-4 mr-2" />
+            Explore Templates
+          </CyberButton>
+          
+          <CyberButton 
+            onClick={() => navigate("/auth")}
+            className="backdrop-blur-md"
+          >
+            Get Started
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </CyberButton>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <section className="py-24 bg-gradient-to-br from-cyber-bg-primary to-cyber-bg-secondary relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center"
+            >
+              <div className="text-4xl font-bold text-cyber-accent-pink mb-2">10,000+</div>
+              <div className="text-cyber-text-secondary">Viral Templates</div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-center"
+            >
+              <div className="text-4xl font-bold text-cyber-accent-blue mb-2">95%</div>
+              <div className="text-cyber-text-secondary">Success Rate</div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="text-center"
+            >
+              <div className="text-4xl font-bold text-cyber-accent-green mb-2">50M+</div>
+              <div className="text-cyber-text-secondary">Views Generated</div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-24 relative">
+      <section className="py-24 bg-gradient-to-br from-cyber-bg-secondary to-cyber-bg-primary relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -214,7 +196,7 @@ const LandingPage = () => {
           >
             <h2 className="text-4xl md:text-5xl font-bold text-cyber-text-primary mb-6">
               Creators Love
-              <span className="text-cyber-accent-blue"> Viralhooks</span>
+              <span className="text-cyber-accent-blue"> ViralHooks</span>
             </h2>
             <p className="text-xl text-cyber-text-secondary">
               Join thousands of creators who've transformed their content strategy
@@ -255,7 +237,7 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-br from-cyber-bg-primary to-cyber-bg-secondary relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-cyber-accent-pink/10 to-cyber-accent-blue/10" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
